@@ -1,0 +1,49 @@
+.jChart_grid {
+    /*border: black 1px solid;*/
+    position: absolute;
+}
+.jChart_title {    
+    font-size: 16pt;
+    font-weight: bold;
+    text-align: center;
+    position: absolute;
+    padding: 5px 0px;
+}
+
+.jChart_h_grid_line 
+{
+    position: absolute;
+    border-bottom: gray 1px dotted;
+    z-index: 1;
+}
+
+.jChart_v_grid_line 
+{
+    position: absolute;
+    border-left: gray 1px dotted;
+    z-index: 1;
+}
+
+.jChart_grid_value
+{
+    position: absolute;    
+    z-index: 3;
+    font-size: 9pt;
+}
+
+.jChart_bar {
+    position: absolute;
+    border: black 1px solid;
+    z-index: 2;
+}
+
+.jChart_data_value {
+    position: absolute;
+    z-index: 3;
+    font-size: 9pt;
+}
+
+.jChart_data_label {
+    position: absolute;
+    font-size: 9pt;
+}

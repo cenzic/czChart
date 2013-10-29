@@ -1,0 +1,284 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+	<head>
+	    <title>Test chart</title>
+	    <style>
+    	    .chart-canvas {
+    	        border: black 1px solid;
+    	        
+    	    }
+    	    .testChart 
+    	    {
+    	        display: inline-block;
+    	        width: 400px;
+    	        height: 300px;
+    	        border: black 1px solid;    	        
+    	        margin-left: 100px;
+    	        margin-top: 20px;
+    	    }    	        	    
+    	</style>
+	    <link type="text/css" href="css/jChart.css" rel="stylesheet"/>
+        <script type="text/javascript" src="js/excanvas.js"></script>
+	    <script type="text/javascript" src="js/jquery-1.9.1.js"></script>	            
+	    <script type="text/javascript" src="js/jGraphic.js"></script>
+	    <script type="text/javascript" src="js/jChart.js"></script>
+   	    <script type="text/javascript" src="js/jPieChart.js"></script>
+		<script type="text/javascript" src="js/jBarChart.js"></script>
+	</head>
+	<body>
+	    <h1>Testing bar chart</h1>	    	    
+	    <div id="barchart1" class="testChart"></div>	    
+	    <div id="barchart2" class="testChart"></div>
+        <div id="barchart3" class="testChart"></div>
+	    <div id="barchart4" class="testChart"></div>
+        <div id="barchart5" class="testChart"></div>
+        <div id="barchart6" class="testChart"></div>
+        <div id="barchart7" class="testChart"></div>
+        <div id="barchart8" class="testChart"></div>    	    
+	    <div id="piechart" class="testChart"></div>
+        
+        
+        <script type="text/javascript">
+	        $("#barchart1").jChart({
+				data:[12,13,24,10,5,7,9],
+				type:'hBar',
+				title: {
+					label:"vertical bar chart asdfasdf adfas f",
+					position:"bottom"
+				},
+				dataLabels:["one very long","two also long","three long as well","four long","five long","six long","seven long"],
+				labelAngle:-30,
+				xPadding:10,
+				axes: {				    
+				    padding:20,//space between the left most bar and the edge of the chart.				
+				    xAxis: {
+					    show:true,
+					    showGrid:true,
+					    label:"xAxis"					
+				    },				
+				    yAxis: {
+					  show:true,  
+					  showGrid:true,
+					  label:"yAxis"
+				    },
+				    y2Axis:{
+					    show:false,
+					    showGrid:true,
+					    label:"y2Axis"
+				    }			
+			    },
+				legend: {
+					showLegend: true,
+					direction: "horizontal",
+					location: "n",
+					maxColumns: 3				
+				}
+	        });
+	        
+	        var chart2 = $("#barchart2").jChart({	            
+                data: [1,2,3],
+                metadata: ["x","y", "z"],
+                groupMetaData: [],
+                type:"hBar",
+                title: {
+	                label:"horizontal bar chart",
+	                position: "top"
+                },
+                axes: {				    
+				    padding:20,//space between the left most bar and the edge of the chart.				
+				    x2Axis: {
+					    show:true,
+					    showGrid:true,
+					    label:"xAxis"					
+				    },				    				    
+				    yAxis:{
+					    show:true,
+					    showGrid:true,
+					    label:"yAxis"
+				    }			
+                },
+                clickHandler: function (e) {
+                    var myObj = e.target;
+                    for (var i = 0; i < chart2.interactiveObjects.length; i++) {
+                        chart2.interactiveObjects[i].restore();
+                        /*This works because each bar represents a stack. If you are using a stacked
+                        * bar chart, switch the if statement to "if(myObj.stackIndex == chart5.interactiveObjects[i].stackIndex) continue;"
+                        * to highlight the entire stack if one piece of the stack is clicked. Likewise if you want a group to be highlighted
+                        * use the following if statement "if(myObj.groupIndex == chart5.interactiveObjects[i].groupIndex) continue;"*/
+                        if(myObj.index==i) continue;
+                        chart2.interactiveObjects[i].update({globalAlpha:.2});
+                    }
+                    /*Since restore works like a stack and the default functions have mouseover events that add a lighting
+                     * effect (and a mouseout to remove it) we need to call restore on just the originally clicked bar twice.
+                     * First to remove light effect added from the mouseover event and the second to actually remove the grey effect
+                     * rather than waiting for the mouseout event to trigger the second restore.  This essentially means the restore
+                     * from the mouseout event, in this case, does nothing.*/
+                    myObj.restore();
+                }
+	        });
+	        $("#barchart3").jChart({
+		        xPadding:0,
+	            data: [
+		            [1, 2, 3],
+		            [3, 4, 5],
+		            [5, 6, 7]
+	            ],
+	            type: "vGroupBar",
+                title: {
+	                label: "vertical group bar chart",
+	                position: "left"
+	            }
+	        });
+	        
+	        $("#barchart4").jChart({
+	            data: [
+		            [1, 2, 3],
+		            [3, 4, 5],
+		            [5, 6, 7]
+	            ],
+	            type: "hGroupBar",
+	            title: {
+	                label: "horizontal group bar chart",
+	                position: "right"
+	            }	            
+	        }); 
+	        
+	        var chart5 = $("#barchart5").jChart({
+	        	data: [
+			            [1, 2, 3],
+		            [3, 4, 5],
+		            [5, 6, 7]
+		            ],
+	            type: "vStackBar",
+                title: {
+	                label: "vertical stacking bar chart",
+	                position: "bottom"
+	            },
+                clickHandler: function (e) {
+                    var myObj = e.target;
+                    window.temp = myObj;
+                    for (var i = 0; i < chart5.interactiveObjects.length; i++) {
+                        chart5.interactiveObjects[i].restore();
+                        /*we want to highlight the entire stack*/
+                        if(myObj.stackIndex == chart5.interactiveObjects[i].stackIndex) continue;
+                        chart5.interactiveObjects[i].update({globalAlpha:.2});
+                    }
+                    /*Since restore works like a stack and the default functions have mouseover events that add a lighting
+                    * effect (and a mouseout to remove it) we need to call restore on just the originally clicked bar twice.
+                    * First to remove light effect added from the mouseover event and the second to actually remove the grey effect
+                    * rather than waiting for the mouseout event to trigger the second restore.  This essentially means the restore
+                    * from the mouseout event, in this case, does nothing.*/
+                    myObj.restore();
+                }
+	        });
+	        
+	        $("#barchart6").jChart({
+	        	data: [
+						[1, 2, 3],
+						[3, 4, 5],
+						[5, 6, 7]
+		            ],
+	            type: "hStackBar",
+	            title: {
+	                label: "horizontal stacking bar chart",
+	                position: "top"
+	            }
+	        });  
+	        
+	        var data = [
+	    				[[1,2,3],//group 1
+	    				 [2,3,4],
+	    				 [3,4,5]
+	    				 ],
+	    				[[7,5,4],//group 2
+	    				 [7,5,2],
+	    				 [3,5,8]
+	    				 ],
+	    				[[7,5,4],//group 3
+	     				 [7,5,2],
+	     				 [3,5,9]
+	     				 ],
+	     				[[7,5,4],//group 3
+	     				 [7,5,2],
+	     				 [3,5,7]
+	     				 ] 
+	    			      ];
+	        $("#barchart7").jChart({
+    			data:data,
+    			groupLabels:["group 1","group 2","group 3"],
+    			type:'vGroupStackBar',
+    			title: {
+    				label:"vertical group stack chart",
+    				position:"bottom"
+    			},
+    			axes: {				    
+				    padding:20,//space between the left most bar and the edge of the chart.				
+				    xAxis: {
+					    show:true,
+					    showGrid:true,
+					    label:"xAxis"					
+				    },				    				    
+				    yAxis:{
+					    show:true,
+					    showGrid:true,
+					    label:"yAxis"
+				    }			
+			    }
+            });
+	        
+            $("#barchart8").jChart({
+            	data:[
+      				[[1,2,3],//group 1
+      				 [2,3,4],
+      				 [3,4,5]
+      				 ],
+      				[[7,5,4],//group 2
+      				 [7,5,2],
+      				 [3,5,9]
+      				 ],
+      				[[7,5,4],//group 3
+       				 [7,5,2],
+       				 [3,5,9]
+       				 ],
+      			      ],
+                type:"hGroupStackBar",
+                title: {
+	                label:"horizontal group stack bar chart",
+	                position: "top"
+                },
+                axes: {				    
+				    padding:20,//space between the left most bar and the edge of the chart.				
+				    xAxis: {
+					    show:true,
+					    showGrid:true,
+					    label:"xAxis"
+				    },				    				    
+				    yAxis:{
+					    show:true,
+					    showGrid:true,
+					    label:"yAxis"
+				    }			
+			    }
+	        });
+
+            var pieChart = $("#piechart").jChart({
+    			data:[115,120,14,50,60],
+    			dataLabels:["one","two","three","four","five"],
+    			type:'pieChart',
+    			title: {
+    				label:"pie chart",
+    				position:"bottom"
+    			},
+    			pieChart:{
+    				radius: 0,
+    				valuePosition:"inside",
+    				minAngleForValue:15    				
+    			},
+    			legend:{
+    				location:"ne"
+    			}
+            });
+            
+    	</script>
+	</body>
+</html>
