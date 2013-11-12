@@ -37,7 +37,7 @@
         <script type="text/javascript">
         $("#barchart1").czChart({
 			data:[12,13,24,10,5,7,9],
-			useCanvas:true,
+			useCanvas:false,
 			type:'hBar',
 			title: {
 				label:"vertical bar chart",
@@ -68,7 +68,7 @@
 				showLegend: true,
 				direction: "horizontal",
 				location: "n",
-				maxColumns: 4
+				maxColumns: 4				
 			}
         });
        
@@ -94,6 +94,8 @@
 			    }
 	        });
 	        $("#barchart3").czChart({
+		        xPadding:0,
+		        useCanvas:false,
 	            data: [
 		            [1, 2, 3],
 		            [3, 4, 5],

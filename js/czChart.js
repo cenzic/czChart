@@ -41,11 +41,12 @@
 		showDataLabels: true,
 		showGroupLabels: true,//set this to show group label instead of individual label.
 		showDataValues: true,
-		maxValue:0,
+		maxValue:0,		
 		barSpacing: 10,//10px between each bar, if not defined then it half bar width.
 		groupSpacing: 20,//space between each group.
-		xPadding: 30,//space for x axis lables.
-		yPadding: 30,//space for y axis lables.						
+		xPadding: 30,//space for x axis labels.
+		yPadding: 30,//space for y axis labels.						
+		padding: 10,// padding for chart to edge of the wrapper
 		addEffect:true,
 		showStroke:true,
 		gridStyle:"solid",
@@ -128,6 +129,7 @@
 		* Convert the current canvas to image.
 		*/
 		toImage:function () {			
+			if(!this.canvas) return;
 			var image = document.createElement("img");
 			var c = this.canvas.get(0);
 			image.src = c.toDataURL();
@@ -235,6 +237,7 @@
 				}				
 				return;
 			}
+			//handle for none canvas chart.
 			this.jGrid = $("<div class='czchart_grid' style='position:absolute;'></div>");
 			this.jObj.append(this.jGrid);
 			if (l.showLegend) {
@@ -246,7 +249,8 @@
 				this._createGrid(true);
 			}
 		},
-		_createLegend: function() {			
+		_createLegend: function() {
+			console.log("_createLegend");
 			var l = this.options.legend;
 			if(l.legendLabels.length==0) l.legendLabels = this.options.dataLabels;
 			if(this.useCanvas) {
@@ -257,25 +261,30 @@
 		},
 		_createDomLegend:function () {
 			var l = this.options.legend;			
+			console.log("_createDomLegend: length: %d",l.legendLabels.length);			
 			var ul = $("<ul style='position:relative; margin:0;'>");	
 			if(l.border) ul.css("border","black 1px solid");
 			ul.css("padding",this._format("%dpx %dpx %dpx 0px",l.padding,l.padding,l.padding));
 			for(var i = 0; i<l.legendLabels.length;i++) {
-				var li = $("<li style='list-style:none '>");
+				if(i!=0 && i.maxColumns != 0 && i%l.maxColumns == 0) {
+					ul.append("<br/>");
+				}
+				var li = $("<li style='list-style:none '/>");				
 				if(l.direction=="horizontal") li.css("display", "inline-block");
 				//li.css("padding", this._format("0px %dpx", l.textPadding));
 				li.css("margin-left", l.padding);
-				var box = $("<span class='legend-box' style='border: black 1px solid; display: inline-block;'>");
+				var box = $("<span class='legend-box' style='border: black 1px solid; display: inline-block;'/>");
 				box.css("width", l.colorBoxSize);
 				box.css("height", l.colorBoxSize);
 				box.css("background-color", this.options.colors[i%this.options.colors.length]);
 				box.css("margin", this._format("0px %dpx", l.boxPadding));
 				li.append(box);
-				var text = $("<span class='legendText'>");
+				var text = $("<span class='legendText'/>");				
 				text.html(l.legendLabels[i]);
-				text.css("font", l.font);
+				text.css("font", l.font);				
 				li.append(text);
 				ul.append(li);
+				
 			}
 			this.jLegend.append(ul);
 			this._calculateLegendSize();
@@ -292,9 +301,7 @@
 				this.jLegend.find("span.legendText").css("font", newFont);
 			}
 			this.jLegend.css('top', this.legendPosition.top);
-			this.jLegend.css('left', this.legendPosition.left);
-			this.jLegend.css('width', this.legendPosition.width + 10);
-			this.jLegend.css('height', this.legendPosition.height);
+			this.jLegend.css('left', this.legendPosition.left);			
 			console.log("legendPosition: %j", this.legendPosition);
 		},
 		// need to now where to create the legend and create the space for it.
@@ -364,6 +371,7 @@
 		},
 		//base on the options need to calculate the location of the legend with x, y, width and height.
 		_calculateLegendSize:function () {
+			console.log("_calculateLegenSize");
 			this.legend = {
 				size: { rows: 0, cols: 0 },
 				text: [],//2 D array of legend.
@@ -444,11 +452,12 @@
 			this.legendPosition = { left: x, top: y, width: width, height: height };
 		},
 		_calculateLegendWidth:function () {
+			console.log("_calculateLegendWidth");
 			var l = this.options.legend;
 			//this is for Dom legend
 			if(this.jLegend) {
 				console.log("this.jLegend.width: %d", this.jLegend.width());
-				return this.jLegend.width() - 2 * l.padding;
+				return this.jLegend.width() + l.padding;
 			}
 			//get array of all text length
 			var lengthArr = this._getLegendTextLength();
@@ -487,11 +496,15 @@
 			return arr;
 		},
 		_calculateLegendHeight:function () {
+			console.log("_calculateLegendHeight");
 			var l = this.options.legend;
+			//calculate for html legend
 			if(this.jLegend) {
-				return this.jLegend.height()- 2 * l.padding;
+				var height = this.jLegend.height() + 2 * l.padding;
+				console.log("_calculateLegendHeight | height: %d", this.jLegend.height());
+				return height;
 			}
-			
+			//calculate for canvas legend
 			var height = 2 * l.textPadding * (this.legend.size.rows-1) + 12 * this.legend.size.rows + 2*l.padding;
 			return height;
 		},
@@ -663,9 +676,10 @@
 					if(angle>0 && !a.y2Axis.show){
 						width -= lastYPadding;
 					}
-				}	
+				}
+				top += this.options.padding;
 			}			
-			var gridSize =  { top: top, left: left, width: width, height: height };
+			var gridSize =  { top: top, left: left, width: width- this.options.padding, height: height- this.options.padding };
 			console.log("gridSize: %j", gridSize);
 			console.log("height: %d", height);
 			return gridSize;
@@ -698,7 +712,7 @@
 			}					
 			
 			// calculate top and height
-			var top = this.wrapperPosition.top;
+			var top = this.wrapperPosition.top;			
 			var height = this.wrapperPosition.height;
 			if (a.xAxis.show){
 				height -= xPadding;
@@ -707,7 +721,10 @@
 				top += xPadding;
 				height -= xPadding;
 			}
-			return { top: top, left: left, width: width, height: height };
+			if(!this._isHorizontalChart()) {
+				top += this.options.padding;
+			}
+			return { top: top, left: left, width: width - this.options.padding, height: height - this.options.padding};
 		},
 		//this should be used by canvas only.
 		_getLabelLengthArr:function () {
