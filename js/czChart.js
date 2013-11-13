@@ -196,7 +196,13 @@
 				c.height *= s;
 				this.canvas = canvas;
 				this.jObj.append(canvas);
-				this.context = canvas.get(0).getContext("2d");
+				var el = canvas.get(0);
+				if(typeof(HTMLCanvasElement) != "undefined") {
+					this.context = el.getContext("2d");
+				}else {					
+					G_vmlCanvasManager.initElement(el);
+					this.context = el.getContext('2d');	
+				}				
 				this.context.scale(s,s);
 			}
 			//adding chart title if it defined.
