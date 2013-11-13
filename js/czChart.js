@@ -129,7 +129,7 @@
 		* Convert the current canvas to image.
 		*/
 		toImage:function () {			
-			if(!this.canvas) return;
+			if(!this.canvas || typeof(HTMLCanvasElement) == "undefined") return;
 			var image = document.createElement("img");
 			var c = this.canvas.get(0);
 			image.src = c.toDataURL();
@@ -143,6 +143,7 @@
 		configureChart: function(opts) {
 			//console.log("get here");
 			//this.useCanvas = typeof(HTMLCanvasElement) != "undefined" && this.options.useCanvas;
+			if(typeof(HTMLCanvasElement) == "undefined") this.options.scale = 1;
 			this.useCanvas = this.options.useCanvas;
 			//set default legend direction
 			if(opts.legend && (opts.legend.location == 'n' || opts.legend.location == 's') && !opts.direction){
