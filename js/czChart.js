@@ -22,7 +22,6 @@
 	};
 	czChart.defaultOptions = {
 		scale:2,
-		useCanvas: true,//set to true to detect if canvas available and use it automatically.false to use html elements to create chart.
 		data: [],//value of chart to create.[[1,2,3],[2,3,4],[3,4,5]] for group bars
 		title: {
 			label: "Chart Title",
@@ -59,7 +58,7 @@
 			radius: 0,
 			//value and label show outside close to the pie.
 			valuePosition:"outside",//if show inside, the value will be inside and legend will be added. 
-			minAngleForValue:10,//if angle < 10 degree, the value will be place outside the pie.
+			minAngleForValue:10//if angle < 10 degree, the value will be place outside the pie.
 		},
 		axes: {
 			origin: { top: 0, left: 0 },//this value will be set when create the grid
@@ -129,7 +128,7 @@
 		* Convert the current canvas to image.
 		*/
 		toImage:function () {			
-			if(!this.canvas || typeof(HTMLCanvasElement) == "undefined") return;
+			if(typeof(HTMLCanvasElement) == "undefined") return;
 			var image = document.createElement("img");
 			var c = this.canvas.get(0);
 			image.src = c.toDataURL();
@@ -141,15 +140,12 @@
 		* Get the position of the chart on the page.
 		*/
 		configureChart: function(opts) {
-			//console.log("get here");
-			//this.useCanvas = typeof(HTMLCanvasElement) != "undefined" && this.options.useCanvas;
+			//For IE8-- always set scale to 1 since there is no raterize function for excanvas library
 			if(typeof(HTMLCanvasElement) == "undefined") this.options.scale = 1;
-			this.useCanvas = this.options.useCanvas;
 			//set default legend direction
 			if(opts.legend && (opts.legend.location == 'n' || opts.legend.location == 's') && !opts.direction){
 				this.options.legend.direction = 'horizontal';
 			}
-			//console.log("useCanvas: %s",this.useCanvas);
 			var offset = this.jObj.offset(),
 			    top = offset.top,
 			    left = offset.left,
@@ -189,23 +185,24 @@
 		*	create html elements for chart layout. We can render differently for canvas here.		
 		*/
 		createLayout: function() {
-			if (this.useCanvas) {
-				var canvas = $(this._format('<canvas width="%d" height="%d"/>', this.wrapperPosition.width, this.wrapperPosition.height));
-				var c = canvas.get(0);
-				var s = this.options.scale;
-				c.width *= s;
-				c.height *= s;
-				this.canvas = canvas;
-				this.jObj.append(canvas);
-				var el = canvas.get(0);
-				if(typeof(HTMLCanvasElement) != "undefined") {
-					this.context = el.getContext("2d");
-				}else {					
-					G_vmlCanvasManager.initElement(el);
-					this.context = el.getContext('2d');	
-				}				
-				this.context.scale(s,s);
-			}
+			var canvas = $(this._format('<canvas width="%d" height="%d"/>', this.wrapperPosition.width, this.wrapperPosition.height));
+			var c = canvas.get(0);
+			var s = this.options.scale;
+			c.width *= s;
+			c.height *= s;
+			this.canvas = canvas;
+			this.jObj.append(canvas);
+			var el = canvas.get(0);
+
+			//special initialize for canvas context with excanvas library
+			if(typeof(HTMLCanvasElement) != "undefined") {
+				this.context = el.getContext("2d");
+			}else {					
+				G_vmlCanvasManager.initElement(el);
+				this.context = el.getContext('2d');	
+			}				
+			this.context.scale(s,s);
+
 			//adding chart title if it defined.
 			if (this.options.title.label) {
 				this._addTitle();
@@ -214,103 +211,30 @@
 				this._addGridAndLegend();
 			}
 		},
+		
 		_addTitle: function() {
 			this.hasTitle = true;
-			if (this.useCanvas) {
-				var t = this.options.title,
-				    font = "bold "+ t.fontSize+"px Arial",
-					y = (t.position == 'top') ? t.fontSize + t.padding : this.wrapperPosition.height - t.padding -13,
-				    x = this.wrapperPosition.width / 2,
-					vAlign = t.position == 'top' ? "bottom" : "top";
-				this._addText(x, y, this.options.title.label, {align:"center",font:font,vAlign:vAlign});
-			} else {
-				this.jTitle = $(this._format("<div class=\"czchart_title\" style='position:absolute;'>%s</div>", this.options.title.label));				
-				this.jObj.append(this.jTitle);
-				this.jTitle.css("left", this.wrapperPosition.left);
-				this.jTitle.css("width", this.wrapperPosition.width);
-				var top = (this.options.title.position == 'top') ?
-					this.wrapperPosition.top :
-					this.wrapperPosition.top + this.wrapperPosition.height - this.jTitle.outerHeight();
-				this.jTitle.css("top", top);
-			}
+			var t = this.options.title,
+			    font = "bold "+ t.fontSize+"px Arial",
+				y = (t.position == 'top') ? t.fontSize + t.padding : this.wrapperPosition.height - t.padding -13,
+			    x = this.wrapperPosition.width / 2,
+				vAlign = t.position == 'top' ? "bottom" : "top";
+			this._addText(x, y, this.options.title.label, {align:"center",font:font,vAlign:vAlign});
 		},
 		_addGridAndLegend: function() {
 			var l = this.options.legend;
-			if (this.useCanvas) {				
-				if (l.showLegend) {
-					this._createLegend();
-					this._createGrid(l.placement == "inside");
-				}else {
-					this._createGrid(true);
-				}				
-				return;
-			}
-			//handle for none canvas chart.
-			this.jGrid = $("<div class='czchart_grid' style='position:absolute;'></div>");
-			this.jObj.append(this.jGrid);
 			if (l.showLegend) {
-				this.jLegend = $("<div class='czchart_legend' style='position:absolute;'></div>");
-				this.jObj.append(this.jLegend);
 				this._createLegend();
-				this._createGrid(l.placement == "inside");				
-			} else {
+				this._createGrid(l.placement == "inside");
+			}else {
 				this._createGrid(true);
-			}
+			}				
 		},
 		_createLegend: function() {
 			console.log("_createLegend");
 			var l = this.options.legend;
 			if(l.legendLabels.length==0) l.legendLabels = this.options.dataLabels;
-			if(this.useCanvas) {
-				this._createCanvasLegend();
-			}else {
-				this._createDomLegend();
-			}
-		},
-		_createDomLegend:function () {
-			var l = this.options.legend;			
-			console.log("_createDomLegend: length: %d",l.legendLabels.length);			
-			var ul = $("<ul style='position:relative; margin:0;'>");	
-			if(l.border) ul.css("border","black 1px solid");
-			ul.css("padding",this._format("%dpx %dpx %dpx 0px",l.padding,l.padding,l.padding));
-			for(var i = 0; i<l.legendLabels.length;i++) {
-				if(i!=0 && i.maxColumns != 0 && i%l.maxColumns == 0) {
-					ul.append("<br/>");
-				}
-				var li = $("<li style='list-style:none '/>");				
-				if(l.direction=="horizontal") li.css("display", "inline-block");
-				//li.css("padding", this._format("0px %dpx", l.textPadding));
-				li.css("margin-left", l.padding);
-				var box = $("<span class='legend-box' style='border: black 1px solid; display: inline-block;'/>");
-				box.css("width", l.colorBoxSize);
-				box.css("height", l.colorBoxSize);
-				box.css("background-color", this.options.colors[i%this.options.colors.length]);
-				box.css("margin", this._format("0px %dpx", l.boxPadding));
-				li.append(box);
-				var text = $("<span class='legendText'/>");				
-				text.html(l.legendLabels[i]);
-				text.css("font", l.font);				
-				li.append(text);
-				ul.append(li);
-				
-			}
-			this.jLegend.append(ul);
-			this._calculateLegendSize();
-			var self = this;
-			if(this.options.legend.scale!=1) { //scalling legend to fix the page.
-				var size = l.colorBoxSize * l.scale;
-				this.jLegend.find("li").css("margin-left", l.padding*l.scale);
-				this.jLegend.find("span.legend-box").each(function() {								
-					$(this).css("width", size);
-					$(this).css("height", size);
-					$(this).css("magine", self._format("0px %dpx", l.boxPadding * l.scale));
-				});
-				var newFont = "normal " + 12 * l.scale + "px arial";
-				this.jLegend.find("span.legendText").css("font", newFont);
-			}
-			this.jLegend.css('top', this.legendPosition.top);
-			this.jLegend.css('left', this.legendPosition.left);			
-			console.log("legendPosition: %j", this.legendPosition);
+			this._createCanvasLegend();
 		},
 		// need to now where to create the legend and create the space for it.
 		_createCanvasLegend:function () {
@@ -394,7 +318,7 @@
 				titleHeight = 0;
 			
 			if (this.hasTitle) {
-				titleHeight = (this.useCanvas) ? this.options.title.fontSize + 2 * this.options.title.padding : this.jTitle.outerHeight();				
+				titleHeight = this.options.title.fontSize + 2 * this.options.title.padding;
 				if (this.options.title.position == 'top') {
 					tTop = titleHeight;
 				}else {
@@ -453,20 +377,11 @@
 			default:
 				console.error("legend location not available");
 			}
-			if(!this.useCanvas) {
-				x += this.wrapperPosition.left;
-				y += this.wrapperPosition.top;
-			}			
 			this.legendPosition = { left: x, top: y, width: width, height: height };
 		},
 		_calculateLegendWidth:function () {
 			console.log("_calculateLegendWidth");
 			var l = this.options.legend;
-			//this is for Dom legend
-			if(this.jLegend) {
-				console.log("this.jLegend.width: %d", this.jLegend.width());
-				return this.jLegend.width() + l.padding;
-			}
 			//get array of all text length
 			var lengthArr = this._getLegendTextLength();
 			this.legend.size = this._calculateLegendDimension();
@@ -491,27 +406,15 @@
 		_getLegendTextLength:function () {
 			var l = this.options.legend;
 			var arr = [];
-			if(this.useCanvas) {
-				this.context.font = l.font;				
-				for(var i = 0; i<l.legendLabels.length;i++) {
-					arr.push(this.context.measureText(l.legendLabels[i]).width);
-				}	
-			}else {
-				this.jLegend.find("span.legendText").each(function(index,item) {
-					arr.push($(item).width());
-				});				
-			}
+			this.context.font = l.font;				
+			for(var i = 0; i<l.legendLabels.length;i++) {
+				arr.push(this.context.measureText(l.legendLabels[i]).width);
+			}	
 			return arr;
 		},
 		_calculateLegendHeight:function () {
 			console.log("_calculateLegendHeight");
-			var l = this.options.legend;
-			//calculate for html legend
-			if(this.jLegend) {
-				var height = this.jLegend.height() + 2 * l.padding;
-				console.log("_calculateLegendHeight | height: %d", this.jLegend.height());
-				return height;
-			}
+			var l = this.options.legend;		
 			//calculate for canvas legend
 			var height = 2 * l.textPadding * (this.legend.size.rows-1) + 12 * this.legend.size.rows + 2*l.padding;
 			return height;
@@ -523,53 +426,42 @@
 			this.gridPosition = this._calculateGrid(isFullWidth);
 			//console.log("gridPosition: %j", this.gridPosition);
 			var a = this.options.axes;
-			if (this.useCanvas) {
-				if (a.xAxis && a.xAxis.show) {
-					var x0 = this.gridPosition.left,
-					    y0 = this.gridPosition.top + this.gridPosition.height + 0.5,
-					    x1 = x0 + this.gridPosition.width,
-					    y1 = y0;
-					this._drawLine(x0, y0, x1, y1);
-				}
-				if (a.x2Axis && a.x2Axis.show) {
-					var x0 = this.gridPosition.left,
-					    y0 = this.gridPosition.top + 0.5,
-					    x1 = x0 + this.gridPosition.width,
-					    y1 = y0;
-					this._drawLine(x0, y0, x1, y1);
-				}
-				if (a.yAxis && a.yAxis.show) {
-					var x0 = this.gridPosition.left + 0.5,
-					    y0 = this.gridPosition.top,
-					    x1 = x0,
-					    y1 = y0 + this.gridPosition.height;
-					this._drawLine(x0, y0, x1, y1);
-				}
-				if (a.y2Axis && a.y2Axis.show) {
-					var x0 = this.gridPosition.left + this.gridPosition.width + 0.5,
-					    y0 = this.gridPosition.top,
-					    x1 = x0,
-					    y1 = y0 + this.gridPosition.height;
-					this._drawLine(x0, y0, x1, y1);
-				}
-			} else {
-				this.jGrid.css("width", this.gridPosition.width);
-				this.jGrid.css("height", this.gridPosition.height);
-				this.jGrid.css("top", this.gridPosition.top);
-				this.jGrid.css("left", this.gridPosition.left);
-				if (a.xAxis && a.xAxis.show) this.jGrid.css("border-bottom", "black 1px solid");
-				if (a.x2Axis && a.x2Axis.show) this.jGrid.css("border-top", "black 1px solid");
-				if (a.yAxis && a.yAxis.show) this.jGrid.css("border-left", "black 1px solid");
-				if (a.y2Axis && a.y2Axis.show) this.jGrid.css("border-right", "black 1px solid");
+			if (a.xAxis && a.xAxis.show) {
+				var x0 = this.gridPosition.left,
+				    y0 = this.gridPosition.top + this.gridPosition.height + 0.5,
+				    x1 = x0 + this.gridPosition.width,
+				    y1 = y0;
+				this._drawLine(x0, y0, x1, y1);
+			}
+			if (a.x2Axis && a.x2Axis.show) {
+				var x0 = this.gridPosition.left,
+				    y0 = this.gridPosition.top + 0.5,
+				    x1 = x0 + this.gridPosition.width,
+				    y1 = y0;
+				this._drawLine(x0, y0, x1, y1);
+			}
+			if (a.yAxis && a.yAxis.show) {
+				var x0 = this.gridPosition.left + 0.5,
+				    y0 = this.gridPosition.top,
+				    x1 = x0,
+				    y1 = y0 + this.gridPosition.height;
+				this._drawLine(x0, y0, x1, y1);
+			}
+			if (a.y2Axis && a.y2Axis.show) {
+				var x0 = this.gridPosition.left + this.gridPosition.width + 0.5,
+				    y0 = this.gridPosition.top,
+				    x1 = x0,
+				    y1 = y0 + this.gridPosition.height;
+				this._drawLine(x0, y0, x1, y1);
 			}
 		},
 		_calculateGrid: function(isFullWidth) {
-			var gridSize = (this.useCanvas) ? this._calculateCanvasGrid() : this._calculateDomGrid();
+			var gridSize = this._calculateCanvasGrid();
 			//adjust for title and legend.
 			var l = this.options.legend;
 			if (this.hasTitle) {
 				console.log("get it");
-				var titleHeight = (this.useCanvas) ? this.options.title.fontSize + 2 * this.options.title.padding : this.jTitle.outerHeight();				
+				var titleHeight = this.options.title.fontSize + 2 * this.options.title.padding;
 				gridSize.height = gridSize.height - titleHeight;
 				if (this.options.title.position == 'top') gridSize.top += titleHeight;
 			}
@@ -594,7 +486,7 @@
 		_calculateCanvasGrid:function () {
 			var a = this.options.axes;						
 			var left = 0,
-			    top = this.useCanvas ? 0 : this.wrapperPosition.top,
+			    top = 0,
 				width = this.wrapperPosition.width,			    
 				height = this.wrapperPosition.height;
 			
@@ -691,49 +583,7 @@
 			console.log("gridSize: %j", gridSize);
 			console.log("height: %d", height);
 			return gridSize;
-		},
-		_calculateDomGrid:function () {
-			//calculate left and width;
-			var left = this.wrapperPosition.left;			
-			var a = this.options.axes;			
-			var xPadding = this.options.xPadding;
-			var yPadding = this.options.yPadding;			
-			var width = this.wrapperPosition.width;						
-			if(this._isHorizontalChart()) {
-				var l =  this._isGroupChart() ? this.options.groupLabels : this.options.dataLabels;
-				var tmpDiv = $('<div style="position:absolute; min-width:10px;"></div>');				
-				for(var i = 0; i< l.length; i++) {
-					tmpDiv.append($('<div class="czchart_data_label" style="position:relative">' + l[i] + '</div>'));
-				}
-				$(document.body).append(tmpDiv);
-				var maxLength = tmpDiv.width();
-				tmpDiv.remove();
-				yPadding += maxLength;
-			}
-			
-			if (a.yAxis.show) {				
-				left += yPadding;
-				width -= yPadding;
-			}
-			if (a.y2Axis.show) {
-				width -= yPadding;
-			}					
-			
-			// calculate top and height
-			var top = this.wrapperPosition.top;			
-			var height = this.wrapperPosition.height;
-			if (a.xAxis.show){
-				height -= xPadding;
-			}
-			if (a.x2Axis.show) {
-				top += xPadding;
-				height -= xPadding;
-			}
-			if(!this._isHorizontalChart()) {
-				top += this.options.padding;
-			}
-			return { top: top, left: left, width: width - this.options.padding, height: height - this.options.padding};
-		},
+		},		
 		//this should be used by canvas only.
 		_getLabelLengthArr:function () {
 			var l =  this._isGroupChart() ? this.options.groupLabels : this.options.dataLabels;
@@ -1297,38 +1147,21 @@
 					var val = i * this.baseLine,
 					    left = Math.floor(val * this.unit),
 					    top = this.gridPosition.height + 2;
-					if (this.useCanvas) {
-						var x0 = this.gridPosition.left + left + 0.5,
-						    y0 = this.gridPosition.top,
-						    x1 = x0,
-						    y1 = y0 + this.gridPosition.height;
-						this._drawLine(x0, y0, x1, y1, this.options.gridColor, 1, this.options.gridStyle);
-						if (this.options.axes.xAxis.show) {
-							var x = x0,
-							    y = y1 + 15;
-							this._addText(x, y, val,{align:"center", font: this.options.axes.xAxis.font});
-						}
-						if (this.options.axes.x2Axis.show) {
-							var x = x0,
-							    y = y0 - 3;
-							this._addText(x, y, val, {align:"center"});
-						}
-					} else {
-						this.jGrid.append(this._format('<div class="czchart_v_grid_line" style="position: absolute; top: 0px; left: %dpx; width: 0px; height: %dpx;"></div>',
-							left, this.gridPosition.height));
-
-						if (this.options.axes.xAxis.show) {
-							var index = $(this._format('<div class="czchart_grid_value"  style="position:absolute;" >%s</div>', val));
-							this.jGrid.append(index);
-							index.css("top", top);
-							index.css("left", left - index.outerWidth() / 2);
-						}
-						if (this.options.axes.x2Axis.show) {
-							var index = $(this._format('<div class="czchart_grid_value" style="position:absolute;" >%s</div>', val));
-							this.jGrid.append(index);
-							index.css("top", -index.outerHeight() - 3);
-							index.css("left", left - index.outerWidth() / 2);
-						}
+					
+					var x0 = this.gridPosition.left + left + 0.5,
+					    y0 = this.gridPosition.top,
+					    x1 = x0,
+					    y1 = y0 + this.gridPosition.height;
+					this._drawLine(x0, y0, x1, y1, this.options.gridColor, 1, this.options.gridStyle);
+					if (this.options.axes.xAxis.show) {
+						var x = x0,
+						    y = y1 + 15;
+						this._addText(x, y, val,{align:"center", font: this.options.axes.xAxis.font});
+					}
+					if (this.options.axes.x2Axis.show) {
+						var x = x0,
+						    y = y0 - 3;
+						this._addText(x, y, val, {align:"center"});
 					}
 				}
 			}
@@ -1340,37 +1173,21 @@
 				for (var i = 1; i <= this.maxIndex; i+=yAxis.incrementValue) {
 					var val = i * this.baseLine,
 					    top = Math.floor(this.gridPosition.height - val * this.unit);
-					if (this.useCanvas) {
-						var x0 = this.gridPosition.left,
-						    y0 = this.gridPosition.top + top +0.5,
-						    x1 = x0 + this.gridPosition.width,
-						    y1 = y0;
-						this._drawLine(x0, y0, x1, y1, this.options.gridColor, 1, this.options.gridStyle);
-						if (this.options.axes.yAxis.show) {
-							var x = x0 - 3,
-							    y = y0 + 3;
-							this._addText(x, y, val, {align:"right", font: this.options.axes.yAxis.font});
-						}
-						if (this.options.axes.y2Axis.show) {
-							var x = x1 + 3,
-							    y = y0 + 3;
-							this._addText(x, y, val);
-						}
-					} else {
-						this.jGrid.append(this._format('<div class="czchart_h_grid_line" style="position: absolute; top: %dpx; left: 0px; width: %dpx; height: 0px;"></div>',
-							top, this.gridPosition.width));
-						if (this.options.axes.yAxis.show) {
-							var index = $(this._format('<div class="czchart_grid_value"  style="position:absolute;">%s</div>', val));
-							this.jGrid.append(index);
-							index.css("top", top - index.outerHeight() / 2);
-							index.css("left", -index.outerWidth() - 3);
-						}
-						if (this.options.axes.y2Axis.show) {
-							var index = $(this._format('<div class="czchart_grid_value" style="position:absolute;">%s</div>', val));
-							this.jGrid.append(index);
-							index.css("top", top - index.outerHeight() / 2);
-							index.css("left", this.gridPosition.width + 3);
-						}
+
+					var x0 = this.gridPosition.left,
+					    y0 = this.gridPosition.top + top +0.5,
+					    x1 = x0 + this.gridPosition.width,
+					    y1 = y0;
+					this._drawLine(x0, y0, x1, y1, this.options.gridColor, 1, this.options.gridStyle);
+					if (this.options.axes.yAxis.show) {
+						var x = x0 - 3,
+						    y = y0 + 3;
+						this._addText(x, y, val, {align:"right", font: this.options.axes.yAxis.font});
+					}
+					if (this.options.axes.y2Axis.show) {
+						var x = x1 + 3,
+						    y = y0 + 3;
+						this._addText(x, y, val);
 					}
 				}
 			}
@@ -1382,59 +1199,13 @@
 		drawChart: function() {
 			//console.log("this.chartData: %j", this.chartData);
 			for (var i = 0; i < this.chartData.length; i++) {
-				if (this.useCanvas) {
-					if(this.options.type=="pieChart"){
-						this._renderPieChart(this.chartData[i]);
-					}else{
-						this._renderBarChart(this.chartData[i]);	
-					}					
-				} else {
-					this._renderDomChart(this.chartData[i]);
-				}
+				if(this.options.type=="pieChart"){
+					this._renderPieChart(this.chartData[i]);
+				}else{
+					this._renderBarChart(this.chartData[i]);	
+				}					
 			}
-		},
-		_renderDomChart: function(b) {
-			if(this.options.type=="pieChart"){
-				console.error("pie chart not available without canvas");
-				return;
-			}
-			this.jGrid.append(this._format('<div class="czchart_bar" style="position: abolute; width: %dpx; height: %dpx; top: %dpx; left: %dpx; background-color: %s"></div>',
-				b.width, b.height, b.top, b.left, b.color));
-			//try to move calculation logic to calculate function.
-			if (this._isHorizontalChart()) {
-				if (this.options.showDataValues) {
-					var value = this.options.type == "hStackBar" ? b.sum : b.value;
-					var val = $(this._format('<div class="czchart_data_value"  style="position:absolute;">%s</div>', value));
-					this.jGrid.append(val);
-					val.css("top", b.top + (b.height - val.outerHeight()) / 2);
-					val.css("left", b.left + b.width + val.outerWidth());
-				}
-				if (this.options.showDataLabels) {
-					var labelVal = (this._isGroupChart() && this.options.showGroupLabels) ? b.groupLabel : b.label;
-					if (!labelVal) return;
-					var label = $(this._format('<div class="czchart_data_label" style="position:absolute;">%s</div>', labelVal));
-					this.jGrid.append(label);
-					label.css("left", b.left - label.outerWidth() - 3);
-					label.css("top", b.top + (b.height - label.outerHeight()) / 2);
-				}
-			} else {
-				if (this.options.showDataValues) {
-					var value = this.options.type == "vStackBar" ? b.sum : b.value;
-					var val = $(this._format('<div class="czchart_data_value" style="position:absolute;">%s</div>', value));
-					this.jGrid.append(val);
-					val.css("top", b.top - val.outerHeight() - 3);
-					val.css("left", b.left + (b.width - val.outerWidth()) / 2);
-				}
-				if (this.options.showDataLabels) {
-					var labelVal = (this._isGroupChart() && this.options.showGroupLabels) ? b.groupLabel : b.label;
-					if (!labelVal) return;
-					var label = $(this._format('<div class="czchart_data_label" style="position:absolute;">%s</div>', labelVal));
-					this.jGrid.append(label);
-					label.css("left", b.left + (b.width - label.outerWidth()) / 2);
-					label.css("top", b.top + b.height + 3);
-				}
-			}
-		},		
+		},			
 		_renderPieChart:function(p){
 			console.log("_renderPieChart: %j",p);
 			var pChart = this.options.pieChart;
@@ -1660,9 +1431,9 @@
 				var grd = this.context.createLinearGradient(x - 10, y, x + width + 10, y);
 				grd.addColorStop(0.4, "#fff");
 			}
-			grd.addColorStop(0, color);
+			grd.addColorStop(0, "black");
 			grd.addColorStop(1, color);
-			this.context.globalAlpha = 0.4;
+			this.context.globalAlpha = 0.25;
 			this.context.fillStyle = grd;
 			this.context.fill();
 		},

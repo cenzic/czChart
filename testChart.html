@@ -38,7 +38,6 @@
         <script type="text/javascript">
         $("#barchart1").czChart({
 			data:[12,13,24,10,5,7,9],
-			useCanvas:false,
 			type:'hBar',
 			title: {
 				label:"vertical bar chart",
@@ -52,7 +51,7 @@
 			    xAxis: {
 				    show:true,
 				    showGrid:true,
-				    label:"xAxis",					
+				    label:"xAxis"					
 			    },				
 			    yAxis: {
 				  show:true,  
@@ -85,7 +84,7 @@
 				    x2Axis: {
 					    show:true,
 					    showGrid:true,
-					    label:"xAxis",					
+					    label:"xAxis"					
 				    },				    				    
 				    yAxis:{
 					    show:true,
@@ -96,7 +95,6 @@
 	        });
 	        $("#barchart3").czChart({
 		        xPadding:0,
-		        useCanvas:false,
 	            data: [
 		            [1, 2, 3],
 		            [3, 4, 5],
@@ -169,7 +167,6 @@
 	        $("#barchart7").czChart({
     			data:data,
     			groupLabels:["group 1","group 2","group 3"],
-    			useCanvas:false,
     			type:'vGroupStackBar',
     			title: {
     				label:"vertical group stack chart",
@@ -180,7 +177,7 @@
 				    xAxis: {
 					    show:true,
 					    showGrid:true,
-					    label:"xAxis",					
+					    label:"xAxis"					
 				    },				    				    
 				    yAxis:{
 					    show:true,
@@ -191,7 +188,6 @@
             });
 	        
             $("#barchart8").czChart({
-	            useCanvas:false,
             	data:[
       				[[1,2,3],//group 1
       				 [2,3,4],
@@ -216,7 +212,7 @@
 				    xAxis: {
 					    show:true,
 					    showGrid:true,
-					    label:"xAxis",					
+					    label:"xAxis"
 				    },				    				    
 				    yAxis:{
 					    show:true,
@@ -229,7 +225,6 @@
             $("#piechart").czChart({
     			data:[115,120,14,50,60],
     			dataLabels:["one","two","three","four","five"],
-    			useCanvas:true,
     			type:'pieChart',
     			title: {
     				label:"pie chart",
