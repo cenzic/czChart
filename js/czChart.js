@@ -142,7 +142,8 @@
 		*/
 		configureChart: function(opts) {
 			//console.log("get here");
-			this.useCanvas = typeof(HTMLCanvasElement) != "undefined" && this.options.useCanvas;
+			//this.useCanvas = typeof(HTMLCanvasElement) != "undefined" && this.options.useCanvas;
+			this.useCanvas = this.options.useCanvas;
 			//set default legend direction
 			if(opts.legend && (opts.legend.location == 'n' || opts.legend.location == 's') && !opts.direction){
 				this.options.legend.direction = 'horizontal';

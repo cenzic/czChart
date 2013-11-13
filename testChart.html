@@ -18,8 +18,9 @@
     	    }    	        	    
     	</style>
 	    <link type="text/css" href="css/czchart.css" rel="stylesheet"/>
-        <script type="text/javascript" src="js/jquery-1.9.1.js"></script>	    
-        <script type="text/javascript" src="js/czchart.js"></script>
+        <script type="text/javascript" src="js/excanvas.compiled.js"></script>
+	    <script type="text/javascript" src="js/jquery-1.9.1.js"></script>	            
+	    <script type="text/javascript" src="js/czchart.js"></script>
 	</head>
 	<body>
 	    <h1>Testing bar chart</h1>	    	    
@@ -168,7 +169,7 @@
 	        $("#barchart7").czChart({
     			data:data,
     			groupLabels:["group 1","group 2","group 3"],
-    			useCanvas:true,
+    			useCanvas:false,
     			type:'vGroupStackBar',
     			title: {
     				label:"vertical group stack chart",
@@ -190,6 +191,7 @@
             });
 	        
             $("#barchart8").czChart({
+	            useCanvas:false,
             	data:[
       				[[1,2,3],//group 1
       				 [2,3,4],

@@ -27,7 +27,7 @@
 .czchart_grid_value
 {
     position: absolute;    
-    z-index: 1;
+    z-index: 3;
     font-size: 9pt;
 }
 
@@ -39,6 +39,7 @@
 
 .czchart_data_value {
     position: absolute;
+    z-index: 3;
     font-size: 9pt;
 }
 
