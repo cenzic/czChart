@@ -32,7 +32,7 @@
 		type: 'vBar',//vBar, hBar, vGroupBar, hGroupBar, vStackBar, hStackBar, vGroupStackBar, hGroupStackBar, pieChart
 		shadow: 5,
 		//color of each bar or "red" for single color. group bars required colors is array, it will be rostate if length less than data length
-		colors: ["red", "green", "blue"],
+		colors: ["red", "green", "blue","aqua","coral","brown","cornflowerblue","darkblue","darkorange","cyan","darkred","gold","indigo","lightblue","magenta","navy","orange","orchid","purple"],
 		dataLabels: [], //lable for each bar,
 		groupLabels: [],//"first", "second", "third"
 		labelAngle:0,
