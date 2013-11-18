@@ -9,18 +9,18 @@
 	//handle for jquery plugin
 	$.fn.czChart = function(opts) {		
 		if($(this).length!=1) return null;
-		var chart = new $.czChart(this,opts);
+		var chart = new czChart(this,opts);
 		chart.render();
 		chart.toImage();
 		return chart;
 	};
-	$.czChart = function(jObj, opts){
+	var czChart = function(jObj, opts){
 		this.jObj = jObj;
-		var options = $.extend(true, { }, $.czChart.defaultOptions, opts);
+		var options = $.extend(true, { }, czChart.defaultOptions, opts);
 		this.options = options;			
 		this.configureChart(opts);
 	};
-	$.czChart.defaultOptions = {
+	czChart.defaultOptions = {
 		scale:2,
 		data: [],//value of chart to create.[[1,2,3],[2,3,4],[3,4,5]] for group bars
 		title: {
@@ -49,7 +49,17 @@
 		addEffect:true,
 		showStroke:true,
 		gridStyle:"solid",
-		gridColor:"#ccc",					
+		gridColor:"#ccc",			
+		pieChart:{
+			startAngle: 90,
+			//clockwise:true,//clockwise couter clockwise
+			lineWidth:3,
+			lineColor:"#333",
+			radius: 0,
+			//value and label show outside close to the pie.
+			valuePosition:"outside",//if show inside, the value will be inside and legend will be added. 
+			minAngleForValue:10//if angle < 10 degree, the value will be place outside the pie.
+		},
 		axes: {
 			origin: { top: 0, left: 0 },//this value will be set when create the grid
 			padding: 20,//space between the left most bar and the edge of the chart.				
@@ -102,48 +112,9 @@
 			maxColumns: 0 //use for north or south location to create multiple row legend.
 		}
 	};
-	/**
-	 * register plugins for different types of chart.
-	 */
-	$.czChart.extend = function(plugin){
-		//verify all property are defined.
-		if(!plugin.types || !$.isArray(plugin.types) || 
-			(plugin.init && typeof(plugin.init) != 'function') ||
-			(plugin.processData && typeof(plugin.processData) != 'function') ||
-			(plugin.render && typeof(plugin.render) != 'function') ||
-			!plugin.defaultOptions || !plugin.prototype){
-			console.error("czChart extend error. Plugin signature incorrect");
-			return;
-		}
-		
-		for(var i=0; i< plugin.types.length; i++){
-			var type = plugin.types[i];
-			$.czChart.prototype.chartTypes[type] = plugin;
-			var opts = {};
-			opts[type]=plugin.defaultOptions;
-			$.extend(true,$.czChart.defaultOptions, opts);
-		};
-		
-		if(plugin.init)	$.czChart.prototype.initHandlers.push(plugin.init);
-				
-		$.extend($.czChart.prototype, plugin.prototype);		
-	};
-	
-	/**
-	 * share functions or properties of all chart.
-	 */
-	$.czChart.prototype = {		
-		/**
-		 * initialization process for all extended
-		 */
-		initHandlers:[],
-		
-		/**
-		 * Hash of type => plugin
-		 */
-		chartTypes:{},
-		
-		/**
+	//real business logic
+	czChart.prototype = {					
+		/*
 		* entry point to draw charts
 		*/
 		render: function() {						
@@ -181,8 +152,16 @@
 			    width = this.jObj.width(),
 			    height = this.jObj.height();
 			this.wrapperPosition = { top: top, left: left, width: width, height: height };			
-						
-			//configure legend scale:
+			//configure pieChart
+			if(this.options.type=="pieChart"){
+				var a = this.options.axes;
+				a.xAxis.show = false;
+				a.x2Axis.show = false;
+				a.yAxis.show = false;
+				a.y2Axis.show = false;
+				this.options.legend.showLegend = this.options.pieChart.valuePosition == "inside";				
+			}
+			//configure legen scale:
 			if(opts.legend && opts.legend.font) {
 				this.options.legend.autoScale = false;
 			}
@@ -200,11 +179,6 @@
 				}
 				var max = Math.max.apply(this, tmpArr);
 				if(max===0) this.options.maxValue = 1;
-			}
-			
-			//invoke all initializing process for plugin.
-			for(var i=0; i< this.initHandlers.length; i++){
-				this.initHandlers[i].apply(this);
 			}
 		},
 		/*
@@ -610,7 +584,7 @@
 			console.log("height: %d", height);
 			return gridSize;
 		},		
-
+		//this should be used by canvas only.
 		_getLabelLengthArr:function () {
 			var l =  this._isGroupChart() ? this.options.groupLabels : this.options.dataLabels;
 			var arr = [];			
@@ -631,41 +605,37 @@
 				console.error("Chart data not defined");
 				return;
 			}
-			var plugin = this.chartTypes[this.options.type];
-			if(plugin && plugin.processData && typeof(plugin.processData) == 'function'){
-				plugin.processData.apply(this);
+			switch (this.options.type) {
+			case "vBar":
+				this._calculateVBar();
+				break;
+			case "hBar":
+				this._calculateHBar();
+				break;
+			case "vGroupBar":
+				this._calculateVGroup();
+				break;
+			case "hGroupBar":
+				this._calculateHGroup();
+				break;
+			case "vStackBar":
+				this._calculateVStack();
+				break;
+			case "hStackBar":
+				this._calculateHStack();
+				break;
+			case "vGroupStackBar":
+				this._calculateVGroupStack();
+				break;
+			case "hGroupStackBar":
+				this._calculateHGroupStack();
+				break;
+			case "pieChart":
+				this._calculatePieChart();
+				break;	
+			default:
+				console.error("chart type not definded");
 			}
-			else{
-				switch (this.options.type) {
-				case "vBar":
-					this._calculateVBar();
-					break;
-				case "hBar":
-					this._calculateHBar();
-					break;
-				case "vGroupBar":
-					this._calculateVGroup();
-					break;
-				case "hGroupBar":
-					this._calculateHGroup();
-					break;
-				case "vStackBar":
-					this._calculateVStack();
-					break;
-				case "hStackBar":
-					this._calculateHStack();
-					break;
-				case "vGroupStackBar":
-					this._calculateVGroupStack();
-					break;
-				case "hGroupStackBar":
-					this._calculateHGroupStack();
-					break;
-				default:
-					console.error("chart type not definded");
-				}	
-			}		
-			
 		},		
 		/*
 		*	Calculate vertical bar chart data
@@ -975,7 +945,40 @@
 				}
 			}
 		},
-		
+		/*
+		*	Calculate vertical bar chart data
+		*/
+		_calculatePieChart: function() {
+			var gridWidth = this.gridPosition.width;			
+			var gridHeight = this.gridPosition.height;
+			var diameter = gridWidth > gridHeight ? gridHeight : gridWidth;
+			var piePadding = 20;
+			var radius = this.options.pieChart.radius ? this.options.pieChart.radius : diameter/2 - piePadding;
+			var x = this.gridPosition.left + gridWidth/2;
+			var y = this.gridPosition.top + gridHeight/2;
+			var center = {x:x, y:y}; 
+			var d = this.options.data;
+			var sum = 0;
+			for(var i=0;i<d.length;i++){
+				sum += d[i];
+			}
+			this.chartData = [];	
+			var endAngle = -this.options.pieChart.startAngle*Math.PI/180;
+			for (var i = 0; i < d.length; i++) {
+				var startAngle = endAngle,
+					angle = d[i]*2*Math.PI/sum,
+					endAngle = startAngle + angle;				
+				this.chartData.push({
+					value: d[i],
+					label: this.options.dataLabels[i],
+					center: center,
+					radius: radius,
+					startAngle: startAngle,
+					endAngle: endAngle,
+					color: this.options.colors[i % this.options.colors.length]
+				});
+			}
+		},
 		/*
 		* maxStackChart
 		*/
@@ -1195,15 +1198,116 @@
 		//draw each bar base on the color caculated width height/ separate this so that if we want to use canvas for richer chart we can.
 		drawChart: function() {
 			//console.log("this.chartData: %j", this.chartData);
-			var plugin = this.chartTypes[this.options.type];
 			for (var i = 0; i < this.chartData.length; i++) {
-				if(plugin && plugin.render){
-					plugin.render.call(this,this.chartData[i]);
+				if(this.options.type=="pieChart"){
+					this._renderPieChart(this.chartData[i]);
 				}else{
 					this._renderBarChart(this.chartData[i]);	
-				}											
+				}					
 			}
 		},			
+		_renderPieChart:function(p){
+			console.log("_renderPieChart: %j",p);
+			var pChart = this.options.pieChart;
+			this._drawPie(p.center.x,p.center.y,p.radius,p.startAngle,p.endAngle,p.color);
+			var angle = (p.endAngle + p.startAngle)/2;
+			if(pChart.valuePosition == "outside"){				
+				var text = p.value + " - " + p.label;
+				this._showPieValueOutSide(p.center.x,p.center.y,p.radius,angle,text);
+			}else{//value inside and show legend.
+				var diffAngle = Math.abs(p.startAngle - p.endAngle);
+				if(diffAngle < Math.PI*pChart.minAngleForValue/180){
+					this._showPieValueOutSide(p.center.x,p.center.y,p.radius,angle,p.value);
+				}else{
+					this._showPieValueInside(p.center.x,p.center.y,p.radius,angle,p.value);	
+				}
+								
+			}			
+		},
+		_showPieValueInside:function(x,y,radius,angle,text){
+			this.context.save();			
+			this.context.beginPath();
+			this.context.translate(x,y);
+			this.context.rotate(angle);
+			this.context.translate(radius*2/3,0);						
+			var align = (angle>=-Math.PI/2 && angle <= Math.PI/2) ? "left" :"right";
+			this.context.textAlign = align;
+			this.context.textBaseline = "middle";
+			//var padding = (angle>=-Math.PI/2 && angle <= Math.PI/2) ? 3 : -3;
+			this.context.rotate(-angle);
+			this.context.fillText(text,0,0);
+			this.context.restore();
+		},
+		_showPieValueOutSide:function(x,y,radius,angle,text){
+			console.log("_showPieValue: %j",arguments);
+			var spacing = 1.1*radius;
+			this.context.save();			
+			this.context.beginPath();
+			this.context.translate(x,y);
+			this.context.rotate(angle);
+			this.context.moveTo(radius*2/3,0);
+			this.context.lineTo(spacing,0);
+			this.context.translate(spacing,0);
+			this.context.rotate(-angle);
+			var hLine = (angle>=-Math.PI/2 && angle <= Math.PI/2) ? 30 : -30;
+			this.context.lineTo(hLine,0);
+			this.context.strokeStyle = "black",
+			this.lineWidth = 1;
+			this.context.stroke();
+			// adding label.
+			this.context.beginPath();			
+			var align = (angle>=-Math.PI/2 && angle <= Math.PI/2) ? "left" :"right";
+			this.context.textAlign = align;
+			this.context.textBaseline = "middle";
+			var padding = (angle>=-Math.PI/2 && angle <= Math.PI/2) ? 3 : -3;
+			this.context.fillText(text,hLine + padding,0);
+			this.context.restore();
+		},
+		_drawPie:function(x,y,radius,start,end,color){
+			console.log("_drawPie: %j",arguments);
+			var pChart = this.options.pieChart;
+			var w = pChart.lineWidth;			
+			this.context.save();			
+			this.context.beginPath();
+			this._drawSegmentLine(x,y,radius-w,start);
+			this.context.arc(x,y,radius-w,start,end);
+			this.context.closePath();
+			this.context.fillStyle = color;
+			this.context.lineJoin = "bevel";
+			this.context.fill();
+			this._applyPieGradient(x,y,radius,start,end,color);
+			this.context.restore();
+			//adding lines			
+			this.context.save();
+			this.context.beginPath();
+			this.context.strokeStyle = pChart.lineColor;
+			this._drawSegmentLine(x,y,radius,start);
+			this.context.moveTo(x,y);
+			this._drawSegmentLine(x,y,radius,end);
+			this.context.lineWidth = w;			
+			this.context.stroke();			
+			this.context.restore();
+		},
+		_drawSegmentLine:function(x,y,r,angle){
+			this.context.save();			
+			this.context.translate(x,y);
+			this.context.rotate(angle);
+			this.context.moveTo(0,0);
+			this.context.lineTo(r,0);
+			this.context.restore();
+		},
+		_applyPieGradient: function(x, y, radius,start,end,color) {
+			this.context.beginPath();
+			var grd = this.context.createRadialGradient(x, y, .9*radius, x, y, radius*1.1);
+			grd.addColorStop(0, color);
+			grd.addColorStop(1, "white");
+			this._drawSegmentLine(x,y,radius,start);
+			this.context.arc(x,y,radius,start,end);
+			this.context.closePath();			
+			this.context.globalAlpha = 0.5;
+			this.context.fillStyle = grd;
+			this.context.fill();
+		},
 		_renderBarChart:function(b){
 			var x0 = this.gridPosition.left + b.left + 1,
 			    y0 = this.gridPosition.top + b.top;
