@@ -18,7 +18,13 @@
 		/**
 		 * set default options for a new chart type Chart.
 		 */
-		defaultOptions:{},
+		defaultOptions:{
+			barChart:{
+				shadow: 5,
+				barSpacing: 10,//10px between each bar, if not defined then it half bar width.
+				groupSpacing: 20//space between each group.
+			}
+		},
 		/**
 		 * called during initializing process with the czChartObject context.
 		 */
@@ -103,6 +109,14 @@
 		 * to use the properties of the object.
 		 */
 		prototype: {
+			//calculate the bar width and spacing between bars.
+			_calculateBarWidth: function(count, gridWidth, group) {
+				group = group || 1;
+				//console.log("_calculateBarWidth: %j",arguments);
+				var s = this.options.barChart.barSpacing;
+				var gs = this.options.barChart.groupSpacing;
+				return (gridWidth - count*s - (group-1) * gs) / count;			
+			},
 			/*
 			*	Calculate vertical bar chart data
 			*/
@@ -115,7 +129,7 @@
 				var unit = this._calculateUnit(max, gridHeight);
 				this.chartData = [];
 				for (var i = 0; i < d.length; i++) {
-					var left = this.options.barSpacing * (i + 1) + i * barWidth,
+					var left = this.options.barChart.barSpacing * (i + 1) + i * barWidth,
 					    height = d[i] * unit,
 					    top = this.gridPosition.height - height - 1, //subtract border;												    
 					    width = barWidth;
@@ -144,7 +158,7 @@
 				for (var i = 0; i < d.length; i++) {
 					var left = 0, //to offset the border.
 					    height = barWidth,
-					    top = this.gridPosition.height - (i + 1) * (this.options.barSpacing + barWidth), //subtract border;
+					    top = this.gridPosition.height - (i + 1) * (this.options.barChart.barSpacing + barWidth), //subtract border;
 					    width = d[i] * unit;
 					this.chartData.push({
 						value: d[i],
@@ -174,8 +188,8 @@
 				for (var i = 0; i < d.length; i++) {
 					for (var j = 0; j < d[i].length; j++) {
 						var count = i * d[0].length + j + 1,
-						    s = this.options.barSpacing,
-						    gs = this.options.groupSpacing,
+						    s = this.options.barChart.barSpacing,
+						    gs = this.options.barChart.groupSpacing,
 						    left = count*s + i*gs + (count-1)*barWidth,
 						    height = d[i][j] * unit,
 						    top = this.gridPosition.height - height - 1, //subtract border;												    
@@ -212,8 +226,8 @@
 						var count = i * d[0].length + j + 1,
 						    left = 0, // consider magin//, //+i for extra spacing between each group
 						    height = barWidth, //,
-						    s = this.options.barSpacing,
-						    gs = this.options.groupSpacing,
+						    s = this.options.barChart.barSpacing,
+						    gs = this.options.barChart.groupSpacing,
 						    top = this.gridPosition.height - (count*s + i*gs + count*barWidth), //subtract border;						
 						    width = d[i][j] * unit,
 						    groupLabel = j == half ? this.options.groupLabels[i] : "";
@@ -259,7 +273,7 @@
 				var unit = this._calculateUnit(max, gridHeight);
 				this.chartData = [];
 				for (var i = 0; i < d.length; i++) {
-					var left = this.options.barSpacing * (i + 1) + i * barWidth,
+					var left = this.options.barChart.barSpacing * (i + 1) + i * barWidth,
 					    width = barWidth,
 					    lastHeight = 0,
 					    sum = 0;
@@ -297,7 +311,7 @@
 				var unit = this._calculateUnit(max, this._getGridWidth());
 				this.chartData = [];
 				for (var i = 0; i < d.length; i++) {
-					var top = this.gridPosition.height - (i + 1) * (this.options.barSpacing + barWidth), //subtract border;
+					var top = this.gridPosition.height - (i + 1) * (this.options.barChart.barSpacing + barWidth), //subtract border;
 					    height = barWidth,
 					    lastWidth = 0,
 					    sum = 0;
@@ -338,8 +352,8 @@
 				this.chartData = [];
 				for (var i = 0; i < d.length; i++) {//group				
 					for (var j = 0; j < d[0].length; j++) {
-						var s = this.options.barSpacing,
-						    gs = this.options.groupSpacing,
+						var s = this.options.barChart.barSpacing,
+						    gs = this.options.barChart.groupSpacing,
 						    barCount = d[0].length*i+j+1,
 							left = s*barCount + i*gs + (barCount-1)*barWidth,
 							width = barWidth,
@@ -382,8 +396,8 @@
 				this.chartData = [];
 				for (var i = 0; i < d.length; i++) {//group				
 					for (var j = 0; j < d[0].length; j++) {
-						var s = this.options.barSpacing,
-						    gs = this.options.groupSpacing,
+						var s = this.options.barChart.barSpacing,
+						    gs = this.options.barChart.groupSpacing,
 						    barCount = d[0].length * i + j + 1,
 						    top = this.gridPosition.height - (barCount * s + i * gs + (barCount) * barWidth),
 						    height = barWidth,
@@ -499,7 +513,7 @@
 				this.context.restore();
 			},
 			_getShadowWidth:function(width) {
-				var tmp = Math.floor((width - this.options.shadow) / 2);
+				var tmp = Math.floor((width - this.options.barChart.shadow) / 2);
 				var shadowWidth = this.options.shadow < tmp ? this.options.shadow : tmp;
 				return shadowWidth;
 			},

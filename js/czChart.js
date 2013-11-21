@@ -31,7 +31,6 @@
 			padding: 10
 		},
 		type: 'vBar',
-		shadow: 5,
 		//color of each bar or "red" for single color. group bars required colors is array, it will be rostate if length less than data length
 		colors: ["red", "green", "blue","aqua","coral","brown","cornflowerblue","darkblue","darkorange","cyan","darkred","gold","indigo","lightblue","magenta","navy","orange","orchid","purple"],
 		dataLabels: [], //lable for each bar,
@@ -42,8 +41,6 @@
 		showGroupLabels: true,//set this to show group label instead of individual label.
 		showDataValues: true,
 		maxValue:0,		
-		barSpacing: 10,//10px between each bar, if not defined then it half bar width.
-		groupSpacing: 20,//space between each group.
 		xPadding: 30,//space for x axis labels.
 		yPadding: 30,//space for y axis labels.						
 		padding: 10,// padding for chart to edge of the wrapper
@@ -122,7 +119,7 @@
 			$.czChart.prototype.chartTypes[type] = plugin;
 			var opts = {};
 			opts[type]=plugin.defaultOptions;
-			$.extend(true,$.czChart.defaultOptions, opts);
+			$.extend(true,$.czChart.defaultOptions, plugin.defaultOptions);
 		};
 		
 		if(plugin.init)	$.czChart.prototype.initHandlers.push(plugin.init);
@@ -730,15 +727,7 @@
 		_log10: function(val) {
 			return Math.log(val) / Math.LN10;
 		},
-		//calculate the bar width and spacing between bars.
-		_calculateBarWidth: function(count, gridWidth, group) {
-			group = group || 1;
-			//console.log("_calculateBarWidth: %j",arguments);
-			var s = this.options.barSpacing;
-			var gs = this.options.groupSpacing;
-			return (gridWidth - count*s - (group-1) * gs) / count;			
-		},
-		
+				
 		//Get the height of the grid
 		_getGridHeight: function() {
 			return this.gridPosition.height - this.options.axes.padding;

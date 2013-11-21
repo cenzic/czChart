@@ -20,14 +20,16 @@
 		 * set default options for pieChart.
 		 */
 		defaultOptions:{
-			startAngle: 90,
-			//clockwise:true,//clockwise couter clockwise
-			lineWidth:3,
-			lineColor:"#333",
-			radius: 0,
-			//value and label show outside close to the pie.
-			valuePosition:"outside",//if show inside, the value will be inside and legend will be added. 
-			minAngleForValue:10//if angle < 10 degree, the value will be place outside the pie.
+			pieChart:{
+				startAngle: 90,
+				//clockwise:true,//clockwise couter clockwise
+				lineWidth:3,
+				lineColor:"#333",
+				radius: 0,
+				//value and label show outside close to the pie.
+				valuePosition:"outside",//if show inside, the value will be inside and legend will be added. 
+				minAngleForValue:10//if angle < 10 degree, the value will be place outside the pie.	
+			}
 		},
 		/**
 		 * called during initializing process with the czChartObject context.
