@@ -22,7 +22,8 @@
 			barChart:{
 				shadow: 5,
 				barSpacing: 10,//10px between each bar, if not defined then it half bar width.
-				groupSpacing: 20//space between each group.
+				groupSpacing: 20,//space between each group.
+				interactive: true,
 			}
 		},
 		/**
@@ -61,7 +62,7 @@
 			}	
 		},
 		/**
-		 * render pie chart on the canvas
+		 * render bar chart on the canvas. If czGraphic is available. Then using czGraphic to render the chart for interactive
 		 */
 		render: function(b){
 			var x0 = this.gridPosition.left + b.left + 1,
@@ -104,11 +105,12 @@
 				}
 			}
 		},
+		
 		/**
 		 * share function among all chart object. Corresponse to the prototype of a function (class).
 		 * to use the properties of the object.
 		 */
-		prototype: {
+		prototype: {			
 			//calculate the bar width and spacing between bars.
 			_calculateBarWidth: function(count, gridWidth, group) {
 				group = group || 1;
@@ -471,8 +473,42 @@
 				//console.log("max: %d", max);
 				return max;			
 			},
-			
 			_drawBar: function(x, y, width, height, color) {
+				var shadowWidth = 0;
+				if(this.options.addEffect) {		
+					if (this._isHorizontalChart()) {										
+						shadowWidth = this._getShadowWidth(height);
+						height -= shadowWidth;
+					} else {										
+						shadowWidth = this._getShadowWidth(width);
+						width -= shadowWidth;
+					}
+				}
+				if(this.options.interactive){
+					this._drawInteractiveBar(x,y,width,height,color, shadowWidth);
+				}
+				else{
+					this._drawStaticBar(x,y,width,height,color,shadowWidth);
+				}
+			},
+			_drawInteractiveBar: function(x, y, width, height, color, shadowWidth){
+				var bar = (this._isHorizontalChart()) ?										
+						this.iCanvas.rectangle(x,y,width,height,{fillStyle:color, shadowLayer:{offsetY: shadowWidth, width: shadowWidth, color: "black"},gradientLayer:{isHorizontal: false}}):
+						this.iCanvas.rectangle(x,y,width,height,{fillStyle:color, shadowLayer:{offsetX: shadowWidth, width: shadowWidth, color: "black"},gradientLayer:{isHorizontal: true}});
+				var self = this;		
+				bar.click(function(e){
+					console.log("get here");
+				});
+				bar.mouseover(function(){
+					bar.lighten(100);
+				});
+				
+				bar.mouseout(function(){
+					bar.restore();
+				});
+			},			
+			
+			_drawStaticBar: function(x, y, width, height, color, shadowWidth) {
 				//console.log("drawBar %j", arguments);		
 				if(!width || !height) return;
 				this.context.save();
@@ -491,13 +527,11 @@
 				}
 				if(this.options.addEffect) {		
 					if (this._isHorizontalChart()) {										
-						var shadowWidth = this._getShadowWidth(height);
 						this.context.shadowOffsetY = shadowWidth;
-						this.context.rect(x, y, width, height - shadowWidth);
+						this.context.rect(x, y, width, height);
 					} else {										
-						var shadowWidth = this._getShadowWidth(width);
 						this.context.shadowOffsetX = shadowWidth;
-						this.context.rect(x, y, width - shadowWidth, height);
+						this.context.rect(x, y, width, height);
 					}
 					this.context.shadowBlur = shadowWidth;
 					this.context.shadowColor = "grey";							
@@ -512,20 +546,22 @@
 				}
 				this.context.restore();
 			},
+			
 			_getShadowWidth:function(width) {
 				var tmp = Math.floor((width - this.options.barChart.shadow) / 2);
 				var shadowWidth = this.options.shadow < tmp ? this.options.shadow : tmp;
 				return shadowWidth;
 			},
+			
 			_applyGradient: function(x, y, width, height, color, shadowWidth) {
 				//console.log("_applyGradient: %j",arguments);
 				this.context.beginPath();
 				if (this._isHorizontalChart()) {
-					this.context.rect(x, y, width, height - shadowWidth);
+					this.context.rect(x, y, width, height);
 					var grd = this.context.createLinearGradient(x, y - 10, x, y + height + 10);
 					grd.addColorStop(0.4, "#fff");
 				} else {
-					this.context.rect(x, y, width - shadowWidth, height);
+					this.context.rect(x, y, width, height);
 					var grd = this.context.createLinearGradient(x - 10, y, x + width + 10, y);
 					grd.addColorStop(0.4, "#fff");
 				}

@@ -47,7 +47,9 @@
 		addEffect:true,
 		showStroke:true,
 		gridStyle:"solid",
-		gridColor:"#ccc",					
+		gridColor:"#ccc",
+		interactive: true,
+		iCanvas:null,		
 		axes: {
 			origin: { top: 0, left: 0 },//this value will be set when create the grid
 			padding: 20,//space between the left most bar and the edge of the chart.				
@@ -146,6 +148,7 @@
 		*/
 		render: function() {						
 			this.createLayout();
+			this.initInterative();
 			this.calculateData();
 			this.drawGridLines();
 			this.drawChart();
@@ -155,7 +158,7 @@
 		* Convert the current canvas to image.
 		*/
 		toImage:function () {			
-			if(typeof(HTMLCanvasElement) == "undefined") return;
+			if(typeof(HTMLCanvasElement) == "undefined" || this.options.interactive) return;
 			var image = document.createElement("img");
 			var c = this.canvas.get(0);
 			image.src = c.toDataURL();
@@ -163,12 +166,24 @@
 			image.height = c.height/this.options.scale;
 			this.canvas.replaceWith(image);
 		},
+		
+		initInterative:function(){
+			//check for interactive chart and 
+			if(this.options.interactive){
+				if(this.jObj.czGraphic){
+					this.iCanvas = $(this.canvas).czGraphic();
+				}else{
+					this.options.interactive = false;
+					console.warn("czGraphic not found, to use interactive czGraphic need to be included.");	
+				}				
+			}
+		},
 		/*
 		* Get the position of the chart on the page.
 		*/
 		configureChart: function(opts) {
 			//For IE8-- always set scale to 1 since there is no raterize function for excanvas library
-			if(typeof(HTMLCanvasElement) == "undefined") this.options.scale = 1;
+			if(typeof(HTMLCanvasElement) == "undefined" || this.options.interactive) this.options.scale = 1;
 			//set default legend direction
 			if(opts.legend && (opts.legend.location == 'n' || opts.legend.location == 's') && !opts.direction){
 				this.options.legend.direction = 'horizontal';
@@ -199,7 +214,7 @@
 				var max = Math.max.apply(this, tmpArr);
 				if(max===0) this.options.maxValue = 1;
 			}
-			
+						
 			//invoke all initializing process for plugin.
 			for(var i=0; i< this.initHandlers.length; i++){
 				this.initHandlers[i].apply(this);
@@ -255,7 +270,7 @@
 			}				
 		},
 		_createLegend: function() {
-			console.log("_createLegend");
+			//console.log("_createLegend");
 			var l = this.options.legend;
 			if(l.legendLabels.length==0) l.legendLabels = this.options.dataLabels;
 			this._createCanvasLegend();
@@ -268,7 +283,7 @@
 		_renderCanvasLegend:function () {
 			var l = this.options.legend,
 				lPos = this.legendPosition;
-			console.log("legendPosition: %j", lPos);
+			//console.log("legendPosition: %j", lPos);
 			this.context.save();
 			this.context.strokeStyle = "black";
 			this.context.lineWidth = 1;
@@ -276,7 +291,7 @@
 			this.context.textBaseline = "top";
 			if(l.scale!=1) {
 				var font = "normal "+ Math.round(12 * l.scale) + "px arial";
-				console.log("font: %s", font);
+				//console.log("font: %s", font);
 				this.context.font = font;				
 			}else {
 				this.context.font = l.font;
@@ -297,7 +312,7 @@
 					x1 = left + l.scale*(l.padding + l.boxPadding) + prevLength;					
 					x2 = x1 + l.scale*(l.colorBoxSize + l.boxPadding);
 					prevLength = x2 + this.legend.columnWidth[j]*l.scale;
-					console.log("x1: %d, x2: %d, y: %d, color: %s", x1, x2, y,this.options.colors[count%this.options.colors.length]);
+					//console.log("x1: %d, x2: %d, y: %d, color: %s", x1, x2, y,this.options.colors[count%this.options.colors.length]);
 					this.context.beginPath();
 					this.context.fillStyle = this.options.colors[count%this.options.colors.length];
 					this.context.rect(x1, y, l.scale*l.colorBoxSize, l.scale*l.colorBoxSize);
@@ -327,7 +342,7 @@
 		},
 		//base on the options need to calculate the location of the legend with x, y, width and height.
 		_calculateLegendSize:function () {
-			console.log("_calculateLegenSize");
+			//console.log("_calculateLegenSize");
 			this.legend = {
 				size: { rows: 0, cols: 0 },
 				text: [],//2 D array of legend.
@@ -363,7 +378,7 @@
 					height = tmpHeight;
 				}
 				this.options.legend.scale = (wScale < hScale) ? wScale : hScale;
-				console.log("this.options.legend.scale: %d", this.options.legend.scale);	
+				//console.log("this.options.legend.scale: %d", this.options.legend.scale);	
 			}			
 			switch (l.location) {
 				case "n":
@@ -404,7 +419,7 @@
 			this.legendPosition = { left: x, top: y, width: width, height: height };
 		},
 		_calculateLegendWidth:function () {
-			console.log("_calculateLegendWidth");
+			//console.log("_calculateLegendWidth");
 			var l = this.options.legend;
 			//get array of all text length
 			var lengthArr = this._getLegendTextLength();
@@ -437,7 +452,7 @@
 			return arr;
 		},
 		_calculateLegendHeight:function () {
-			console.log("_calculateLegendHeight");
+			//console.log("_calculateLegendHeight");
 			var l = this.options.legend;		
 			//calculate for canvas legend
 			var height = 2 * l.textPadding * (this.legend.size.rows-1) + 12 * this.legend.size.rows + 2*l.padding;
@@ -484,7 +499,6 @@
 			//adjust for title and legend.
 			var l = this.options.legend;
 			if (this.hasTitle) {
-				console.log("get it");
 				var titleHeight = this.options.title.fontSize + 2 * this.options.title.padding;
 				gridSize.height = gridSize.height - titleHeight;
 				if (this.options.title.position == 'top') gridSize.top += titleHeight;
@@ -504,7 +518,7 @@
 					gridSize.width = gridSize.width - this.legendPosition.width - 2*l.margin;	
 				}				
 			}
-			console.log("grid height: %d", gridSize.height);
+			//console.log("grid height: %d", gridSize.height);
 			return gridSize;
 		},
 		_calculateCanvasGrid:function () {
@@ -604,8 +618,8 @@
 				top += this.options.padding;
 			}			
 			var gridSize =  { top: top, left: left, width: width- this.options.padding, height: height- this.options.padding };
-			console.log("gridSize: %j", gridSize);
-			console.log("height: %d", height);
+			//console.log("gridSize: %j", gridSize);
+			//console.log("height: %d", height);
 			return gridSize;
 		},		
 

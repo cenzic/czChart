@@ -20,6 +20,7 @@
 	    <link type="text/css" href="css/czchart.css" rel="stylesheet"/>
         <script type="text/javascript" src="js/excanvas.js"></script>
 	    <script type="text/javascript" src="js/jquery-1.9.1.js"></script>	            
+	    <script type="text/javascript" src="js/czGraphic.js"></script>
 	    <script type="text/javascript" src="js/czchart.js"></script>
    	    <script type="text/javascript" src="js/czPieChart.js"></script>
 		<script type="text/javascript" src="js/czBarChart.js"></script>
@@ -38,41 +39,41 @@
         
         
         <script type="text/javascript">
-        $("#barchart1").czChart({
-			data:[12,13,24,10,5,7,9],
-			type:'hBar',
-			title: {
-				label:"vertical bar chart",
-				position:"bottom"
-			},
-			dataLabels:["one very long","two also long","three long as well","four long","five long","six long","seven long"],
-			labelAngle:-30,
-			xPadding:10,
-			axes: {				    
-			    padding:20,//space between the left most bar and the edge of the chart.				
-			    xAxis: {
-				    show:true,
-				    showGrid:true,
-				    label:"xAxis"					
-			    },				
-			    yAxis: {
-				  show:true,  
-				  showGrid:true,
-				  label:"yAxis"
+	        $("#barchart1").czChart({
+				data:[12,13,24,10,5,7,9],
+				type:'hBar',
+				title: {
+					label:"vertical bar chart",
+					position:"bottom"
+				},
+				dataLabels:["one very long","two also long","three long as well","four long","five long","six long","seven long"],
+				labelAngle:-30,
+				xPadding:10,
+				axes: {				    
+				    padding:20,//space between the left most bar and the edge of the chart.				
+				    xAxis: {
+					    show:true,
+					    showGrid:true,
+					    label:"xAxis"					
+				    },				
+				    yAxis: {
+					  show:true,  
+					  showGrid:true,
+					  label:"yAxis"
+				    },
+				    y2Axis:{
+					    show:false,
+					    showGrid:true,
+					    label:"y2Axis"
+				    }			
 			    },
-			    y2Axis:{
-				    show:false,
-				    showGrid:true,
-				    label:"y2Axis"
-			    }			
-		    },
-			legend: {
-				showLegend: true,
-				direction: "horizontal",
-				location: "n",
-				maxColumns: 4				
-			}
-        });
+				legend: {
+					showLegend: true,
+					direction: "horizontal",
+					location: "n",
+					maxColumns: 4				
+				}
+	        });
        
             $("#barchart2").czChart({
                 data: [1, 2, 3],
@@ -241,6 +242,7 @@
     				location:"ne"
     			}
             });
+            
     	</script>
 	</body>
 </html>
