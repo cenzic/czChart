@@ -605,10 +605,28 @@
 				ax += x;
 				var ay = this.dy || 0;
 				ay += y;	
-				var w = options.lineWith || 1;
+				var w = options.lineWith || 1;								
+				if(options.gradientLayer){
+					self.context.save();
+					self.context.beginPath();
+					self.context.fillStyle = options.fillStyle || "black";
+					
+					self._drawSegmentLine(ax,ay,r-w,start);
+					self.context.arc(ax,ay,r-w,start,end);
+					self.context.closePath();
+					
+					self.context.restore();						
+					var grd = self.context.createRadialGradient(x, y, .9*r, x, y, r*1.1);
+					grd.addColorStop(0, options.fillStyle);
+					grd.addColorStop(1, "white");								
+					
+					self.context.globalAlpha = 0.5;
+					self.context.fillStyle = grd;
+					self.context.fill();	
+				}	
 				self._drawSegmentLine(ax,ay,r-w,start);
 				self.context.arc(ax,ay,r-w,start,end);
-				self.context.closePath();	
+				self.context.closePath();
 			};
 			
 //			this.renderHelper(options,render);					
@@ -778,6 +796,7 @@
 			}
 			
 			this.czGraphicObj.context.restore();
+			this.invokeEvent("change");
 		},
 		register: function() {
 			this.czGraphicObj.imageCollection[this.guid] = this;
@@ -898,6 +917,12 @@
 			this._registerEvent("click", handler);
 		},
 		/**
+		 * happen when it call render
+		 */
+		change: function(handler){
+			this._registerEvent("change", handler);
+		},
+		/**
 		 * direct bind on mouse down event
 		 */
 		mousedown : function(handler) {
@@ -956,7 +981,7 @@
 		 * invoke event handlers register with the images.
 		 */
 		invokeEvent : function(type) {
-			if (!this.events[type])
+			if (!this.events || !this.events[type])
 				return;
 			for ( var i = 0; i < this.events[type].length; i++) {
 				var event = {

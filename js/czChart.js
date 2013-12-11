@@ -100,6 +100,15 @@
 			//if not it will calculate to shrink the legend if needed.
 			scale:1, //this will be set programmatically if autoScale is true.
 			maxColumns: 0 //use for north or south location to create multiple row legend.
+		},
+		mouseoverHandler: function(e){
+			e.target.lighten(100);
+		},
+		clickHandler : function(e){
+			console.log("click on %d", e.target.index);
+		},
+		mouseoutHandler: function(e){
+			e.target.restore();
 		}
 	};
 	/**
@@ -151,8 +160,7 @@
 			this.initInterative();
 			this.calculateData();
 			this.drawGridLines();
-			this.drawChart();
-			this.attachEvent();
+			this.drawChart();			
 		},		
 		/*
 		* Convert the current canvas to image.
@@ -845,15 +853,24 @@
 			var plugin = this.chartTypes[this.options.type];
 			for (var i = 0; i < this.chartData.length; i++) {
 				if(plugin && plugin.render){
-					plugin.render.call(this,this.chartData[i]);
+					plugin.render.call(this,this.chartData[i],i);
 				}else{
 					console.error("no render function available to render chart type");
 				}											
 			}
 		},
 		//add mouse event handler for chart to create interative. Not now.
-		attachEvent: function() {
-			//console.log("attachEvent not implement yet");
+		attachEvent: function(czGraphicObj) {
+			var opts = this.options;
+			if(typeof(opts.clickHandler) == 'function'){
+				czGraphicObj.click(opts.clickHandler);
+			}
+			if(typeof(opts.mouseoverHandler) == 'function'){
+				czGraphicObj.mouseover(opts.mouseoverHandler);
+			}
+			if(typeof(opts.mouseoutHandler) == 'function'){
+				czGraphicObj.mouseout(opts.mouseoutHandler);
+			}
 		}
 	};	
 })(jQuery);

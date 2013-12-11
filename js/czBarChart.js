@@ -23,7 +23,7 @@
 				shadow: 5,
 				barSpacing: 10,//10px between each bar, if not defined then it half bar width.
 				groupSpacing: 20,//space between each group.
-				interactive: true,
+				interactive: true				
 			}
 		},
 		/**
@@ -64,10 +64,10 @@
 		/**
 		 * render bar chart on the canvas. If czGraphic is available. Then using czGraphic to render the chart for interactive
 		 */
-		render: function(b){
+		render: function(b,i){
 			var x0 = this.gridPosition.left + b.left + 1,
 		    y0 = this.gridPosition.top + b.top;
-			this._drawBar(x0, y0, b.width, b.height, b.color);
+			this._drawBar(x0, y0, b.width, b.height, b.color, i);
 			if (this._isHorizontalChart()) {
 				this.context.textBaseline = "middle";
 				if (this.options.showDataValues) {
@@ -473,7 +473,7 @@
 				//console.log("max: %d", max);
 				return max;			
 			},
-			_drawBar: function(x, y, width, height, color) {
+			_drawBar: function(x, y, width, height, color, i) {
 				var shadowWidth = 0;
 				if(this.options.addEffect) {		
 					if (this._isHorizontalChart()) {										
@@ -485,27 +485,20 @@
 					}
 				}
 				if(this.options.interactive){
-					this._drawInteractiveBar(x,y,width,height,color, shadowWidth);
+					this._drawInteractiveBar(x,y,width,height,color, shadowWidth, i);
 				}
 				else{
 					this._drawStaticBar(x,y,width,height,color,shadowWidth);
 				}
 			},
-			_drawInteractiveBar: function(x, y, width, height, color, shadowWidth){
+			_drawInteractiveBar: function(x, y, width, height, color, shadowWidth, i){
 				var bar = (this._isHorizontalChart()) ?										
 						this.iCanvas.rectangle(x,y,width,height,{fillStyle:color, shadowLayer:{offsetY: shadowWidth, width: shadowWidth, color: "black"},gradientLayer:{isHorizontal: false}}):
 						this.iCanvas.rectangle(x,y,width,height,{fillStyle:color, shadowLayer:{offsetX: shadowWidth, width: shadowWidth, color: "black"},gradientLayer:{isHorizontal: true}});
-				var self = this;		
-				bar.click(function(e){
-					console.log("get here");
-				});
-				bar.mouseover(function(){
-					bar.lighten(100);
-				});
-				
-				bar.mouseout(function(){
-					bar.restore();
-				});
+				bar.index = i;
+				if(this.interactiveBars == undefined) this.interactiveBars = [];
+				this.interactiveBars[i]= bar;
+				this.attachEvent(bar);
 			},			
 			
 			_drawStaticBar: function(x, y, width, height, color, shadowWidth) {
