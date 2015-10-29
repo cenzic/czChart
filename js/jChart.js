@@ -242,7 +242,8 @@
 					tmpArr = this.options.data;
 				}
 				var max = Math.max.apply(this, tmpArr);
-				if (max === 0) this.options.maxValue = 1;
+				if (max === 0)
+					this.options.maxValue = 1;
 				
 			}
 						
@@ -819,7 +820,8 @@
 		*/
 		_dashedLine: function (x, y, x2, y2, da, ctx) {
 		    ctx = ctx || this.context;
-			if (!da) da = [10, 5];
+			if (!da)
+				da = [10, 5];
 			ctx.save();
 			var dx = (x2 - x), dy = (y2 - y);
 			var len = Math.sqrt(dx * dx + dy * dy);
@@ -854,9 +856,11 @@
 		_format: function() {
 			var format = arguments[0] || "";
 			var match = format.match(/%s|%d|%j/g);
-			if (!match) return format;
+			if (!match)
+				return format;
 
-			if (match.length != arguments.length - 1) throw { name: "Argument Error", message: "Number of arguments mismatch" };
+			if (match.length != arguments.length - 1)
+				throw { name: "Argument Error", message: "Number of arguments mismatch" };
 			for (var i = 1; i < arguments.length; i++) {
 				var matchIndex = i - 1;
 				var value = (match[matchIndex] == "%j") ? JSON.stringify(arguments[i]) : arguments[i];
