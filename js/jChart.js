@@ -1011,18 +1011,15 @@
 		//add mouse event handler for chart to create interative. Not now.
 		attachEvent: function(jGraphicObj) {
 			var opts = this.options;
-			if(typeof(opts.clickHandler) == 'function'){
-				jGraphicObj.click(opts.clickHandler);
+			function attachHandler(event,fun){
+				if(typeof(fun) == 'function'){
+					jGraphicObj[event](fun);
+				}
 			}
-			if(typeof(opts.mouseoverHandler) == 'function'){
-				jGraphicObj.mouseover(opts.mouseoverHandler);
-			}
-			if(typeof(opts.mouseoutHandler) == 'function'){
-				jGraphicObj.mouseout(opts.mouseoutHandler);
-			}
-			if (typeof (opts.mousemoveHandler) == 'function') {
-				jGraphicObj.mousemove(opts.mousemoveHandler);
-			}
+			attachHandler('click'    ,opts.clickHandler);
+			attachHandler('mouseover',opts.mouseoverHandler);
+			attachHandler('mouseout' ,opts.mouseoutHandler);
+			attachHandler('mousemove',opts.mousemoveHandler);
 		}
 	};	
 })(jQuery);
