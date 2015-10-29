@@ -168,10 +168,10 @@
 		*/
 		fixChartPosition: function () {
 			var pos = this.jObj.offset();
-			$(this.bCanvas).css("top", pos.top);
-			$(this.bCanvas).css("left", pos.left);
-			$(this.canvas).css("top", pos.top);
-			$(this.canvas).css("left", pos.left);
+			$(this.bCanvas).css("top" , pos.top)
+			               .css("left", pos.left);
+			$(this. canvas).css("top" , pos.top)
+			               .css("left", pos.left);
 			this.iCanvas.initCanvasPos();
 		},
 		/**
@@ -303,10 +303,8 @@
 			//adding chart title if it defined.
 			if (this.options.title.label) {
 				this._addTitle();
-				this._addGridAndLegend();
-			} else {
-				this._addGridAndLegend();
 			}
+			this._addGridAndLegend();
 		},
 		
 		_addTitle: function() {			
