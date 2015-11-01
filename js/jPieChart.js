@@ -60,10 +60,7 @@
 			var y = this.gridPosition.top + gridHeight/2;
 			var center = {x:x, y:y}; 
 			var d = this.options.data;
-			var sum = 0;
-			for(var i=0;i<d.length;i++){
-				sum += d[i];
-			}
+			var sum = $.jChart.prototype._sumOfArray(d);
 			this.chartData = [];	
 			//console.log("this.options.pieChart: %d", JSON.stringify(this.options.pieChart));
 			var endAngle = -this.options.pieChart.startAngle*Math.PI/180;

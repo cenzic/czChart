@@ -548,12 +548,8 @@
 						? lengthArr[count] : this.legend.columnWidth[j];					
 				}
 			}
-			var length = 0;
-			for(var i=0;i<this.legend.columnWidth.length;i++) {
-				length += this.legend.columnWidth[i];
-			}
-			length += (2 * l.boxPadding + l.colorBoxSize + l.padding) * this.legend.size.columns + l.padding;								
-			return length;
+			return this._sumOfArray(this.legend.columnWidth) +
+				(2 * l.boxPadding + l.colorBoxSize + l.padding) * this.legend.size.columns + l.padding;
 		},
 		//this should be used by canvas only.
 		_getLegendTextLength: function () {
@@ -900,6 +896,13 @@
 		},
 		_log10: function(val) {
 			return Math.log(val) / Math.LN10;
+		},
+		_sumOfArray: function(arr) {
+			var sum=0;
+			var l=arr.length;
+			for(var i=0; i<l; i++)
+				sum+=arr[i];
+			return sum;
 		},
 				
 		//Get the height of the grid
