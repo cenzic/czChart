@@ -168,10 +168,10 @@
 		*/
 		fixChartPosition: function () {
 			var pos = this.jObj.offset();
-			$(this.bCanvas).css("top", pos.top);
-			$(this.bCanvas).css("left", pos.left);
-			$(this.canvas).css("top", pos.top);
-			$(this.canvas).css("left", pos.left);
+			$(this.bCanvas).css("top" , pos.top)
+			               .css("left", pos.left);
+			$(this. canvas).css("top" , pos.top)
+			               .css("left", pos.left);
 			this.iCanvas.initCanvasPos();
 		},
 		/**
@@ -242,7 +242,8 @@
 					tmpArr = this.options.data;
 				}
 				var max = Math.max.apply(this, tmpArr);
-				if (max === 0) this.options.maxValue = 1;
+				if (max === 0)
+					this.options.maxValue = 1;
 				
 			}
 						
@@ -303,10 +304,8 @@
 			//adding chart title if it defined.
 			if (this.options.title.label) {
 				this._addTitle();
-				this._addGridAndLegend();
-			} else {
-				this._addGridAndLegend();
 			}
+			this._addGridAndLegend();
 		},
 		
 		_addTitle: function() {			
@@ -549,12 +548,8 @@
 						? lengthArr[count] : this.legend.columnWidth[j];					
 				}
 			}
-			var length = 0;
-			for(var i=0;i<this.legend.columnWidth.length;i++) {
-				length += this.legend.columnWidth[i];
-			}
-			length += (2 * l.boxPadding + l.colorBoxSize + l.padding) * this.legend.size.columns + l.padding;								
-			return length;
+			return this._sumOfArray(this.legend.columnWidth) +
+				(2 * l.boxPadding + l.colorBoxSize + l.padding) * this.legend.size.columns + l.padding;
 		},
 		//this should be used by canvas only.
 		_getLegendTextLength: function () {
@@ -821,7 +816,8 @@
 		*/
 		_dashedLine: function (x, y, x2, y2, da, ctx) {
 		    ctx = ctx || this.context;
-			if (!da) da = [10, 5];
+			if (!da)
+				da = [10, 5];
 			ctx.save();
 			var dx = (x2 - x), dy = (y2 - y);
 			var len = Math.sqrt(dx * dx + dy * dy);
@@ -856,9 +852,11 @@
 		_format: function() {
 			var format = arguments[0] || "";
 			var match = format.match(/%s|%d|%j/g);
-			if (!match) return format;
+			if (!match)
+				return format;
 
-			if (match.length != arguments.length - 1) throw { name: "Argument Error", message: "Number of arguments mismatch" };
+			if (match.length != arguments.length - 1)
+				throw { name: "Argument Error", message: "Number of arguments mismatch" };
 			for (var i = 1; i < arguments.length; i++) {
 				var matchIndex = i - 1;
 				var value = (match[matchIndex] == "%j") ? JSON.stringify(arguments[i]) : arguments[i];
@@ -898,6 +896,13 @@
 		},
 		_log10: function(val) {
 			return Math.log(val) / Math.LN10;
+		},
+		_sumOfArray: function(arr) {
+			var sum=0;
+			var l=arr.length;
+			for(var i=0; i<l; i++)
+				sum+=arr[i];
+			return sum;
 		},
 				
 		//Get the height of the grid
@@ -1013,18 +1018,15 @@
 		//add mouse event handler for chart to create interative. Not now.
 		attachEvent: function(jGraphicObj) {
 			var opts = this.options;
-			if(typeof(opts.clickHandler) == 'function'){
-				jGraphicObj.click(opts.clickHandler);
+			function attachHandler(event,fun){
+				if(typeof(fun) == 'function'){
+					jGraphicObj[event](fun);
+				}
 			}
-			if(typeof(opts.mouseoverHandler) == 'function'){
-				jGraphicObj.mouseover(opts.mouseoverHandler);
-			}
-			if(typeof(opts.mouseoutHandler) == 'function'){
-				jGraphicObj.mouseout(opts.mouseoutHandler);
-			}
-			if (typeof (opts.mousemoveHandler) == 'function') {
-				jGraphicObj.mousemove(opts.mousemoveHandler);
-			}
+			attachHandler('click'    ,opts.clickHandler);
+			attachHandler('mouseover',opts.mouseoverHandler);
+			attachHandler('mouseout' ,opts.mouseoutHandler);
+			attachHandler('mousemove',opts.mousemoveHandler);
 		}
 	};	
 })(jQuery);
